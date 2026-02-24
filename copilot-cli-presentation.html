@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Copilot CLI — The Future is Agentic</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/black.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --orange: #f0883e;
+    --red: #f85149;
+    --card: #161b22;
+    --muted: #8b949e;
+  }
+
+  .reveal { font-family: 'Inter', sans-serif; color: #e6edf3; }
+  .reveal .slides { text-align: left; }
+
+  /* CRITICAL: no scrollbars, ever */
+  .reveal .slides section {
+    padding: 18px 36px;
+    box-sizing: border-box;
+    overflow: hidden !important;
+    height: 100%;
+  }
+
+  .reveal h1, .reveal h2, .reveal h3 {
+    font-weight: 900; text-transform: none; letter-spacing: -0.02em; text-align: left; margin: 0 0 8px 0;
+  }
+  .reveal h1 { font-size: 1.9em; line-height: 1.1; }
+  .reveal h2 { font-size: 1.35em; color: var(--green); }
+  .reveal h3 { font-size: 0.85em; color: var(--blue); font-weight: 600; }
+  .reveal p { font-size: 0.62em; line-height: 1.4; color: #c9d1d9; margin: 4px 0; }
+  .reveal ul { list-style: none; padding: 0; margin: 6px 0; }
+  .reveal ul li { font-size: 0.62em; line-height: 1.4; color: #c9d1d9; margin-bottom: 3px; }
+  .reveal ul li::before { content: "→ "; color: var(--green); font-weight: 700; }
+
+  .el li::before { content: "" !important; }
+
+  /* Gradient title */
+  .gt { background: linear-gradient(135deg, var(--green), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* Cards row */
+  .cards { display: flex; gap: 12px; margin: 8px 0; }
+  .card {
+    flex: 1; background: var(--card); border-radius: 10px; padding: 12px;
+    border: 1px solid #30363d;
+  }
+  .card h4 { font-size: 0.7em; font-weight: 700; color: #fff; margin: 2px 0; }
+  .card p { font-size: 0.55em !important; color: var(--muted); margin: 2px 0; line-height: 1.3; }
+  .card .icon { font-size: 1.1em; }
+  .card .num { font-size: 1.4em; font-weight: 900; margin-bottom: 2px; }
+
+  /* Terminal */
+  .term {
+    background: #010409; border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.52em; border: 1px solid #30363d; overflow: hidden; margin: 6px 0;
+  }
+  .term-bar { background: #161b22; padding: 4px 10px; display: flex; gap: 5px; align-items: center; }
+  .term-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .term-dot.r { background: var(--red); }
+  .term-dot.y { background: var(--orange); }
+  .term-dot.g { background: var(--green); }
+  .term-body { padding: 8px 12px; line-height: 1.55; }
+  .term .p { color: var(--green); }
+  .term .c { color: #fff; }
+  .term .o { color: var(--muted); }
+  .term .h { color: var(--blue); }
+  .term .w { color: var(--orange); }
+
+  /* Stats row */
+  .stats { display: flex; gap: 12px; margin: 8px 0; }
+  .stat {
+    flex: 1; text-align: center; background: var(--card); border-radius: 10px;
+    padding: 10px; border: 1px solid #30363d;
+  }
+  .stat .big { font-size: 1.6em; font-weight: 900; }
+  .stat .big.gt { background: linear-gradient(135deg, var(--green), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat .lbl { font-size: 0.5em; color: var(--muted); }
+
+  /* Flywheel */
+  .fly { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 8px 0; }
+  .fly-s { background: var(--card); border: 2px solid #30363d; border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 0.7em; }
+  .fly-a { font-size: 1.2em; color: var(--green); }
+
+  /* Compare columns */
+  .cmp { display: flex; gap: 14px; margin: 6px 0; }
+  .cmp-col { flex: 1; background: var(--card); border-radius: 10px; padding: 12px; border: 1px solid #30363d; }
+  .cmp-col h4 { font-size: 0.7em; font-weight: 700; margin: 0 0 4px 0; text-align: center; }
+  .cmp-col.bad { border-color: var(--red); }
+  .cmp-col.bad h4 { color: var(--red); }
+  .cmp-col.good { border-color: var(--green); }
+  .cmp-col.good h4 { color: var(--green); }
+
+  /* Takeaway box */
+  .tip {
+    background: linear-gradient(135deg, rgba(63,185,80,0.12), rgba(88,166,255,0.12));
+    border: 1px solid var(--green); border-radius: 8px; padding: 8px 12px; margin-top: 6px;
+  }
+  .tip p { color: #fff !important; font-weight: 600; font-size: 0.6em !important; margin: 0; }
+
+  /* Cmd table */
+  .ct { width: 100%; border-collapse: separate; border-spacing: 0 3px; margin-top: 6px; }
+  .ct td { padding: 5px 10px; font-size: 0.58em; border: none; }
+  .ct td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--green); font-weight: 700; background: var(--card); border-radius: 6px 0 0 6px; white-space: nowrap; }
+  .ct td:last-child { background: var(--card); color: var(--muted); border-radius: 0 6px 6px 0; }
+
+  /* Quote slides */
+  .qs { display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; }
+  .qs blockquote { border: none; background: none; box-shadow: none; font-size: 1.4em; font-weight: 700; line-height: 1.3; color: #fff; max-width: 80%; padding: 0; text-align: center; }
+  .qs .sub { display: block; font-size: 0.32em; color: var(--muted); font-weight: 300; margin-top: 12px; }
+
+  /* Section dividers */
+  .divider { text-align: center !important; }
+  .divider h2 { text-align: center !important; font-size: 1.8em !important; }
+  .divider p { text-align: center !important; font-size: 0.85em; color: var(--muted); }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .blink { animation: blink 1.2s step-end infinite; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- TITLE -->
+<section data-background-color="#0d1117">
+  <h1 class="gt" style="font-size:2.4em; margin-top: 40px;">GitHub Copilot CLI</h1>
+  <p style="font-size:1em; color: var(--muted); font-weight:300;">The Future is Agentic. The Terminal is Back. 🚀</p>
+  <div class="term" style="max-width:500px; margin-top:16px;">
+    <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span></div>
+    <div class="term-body">
+      <span class="p">❯ </span><span class="c">copilot</span><br>
+      <span class="o">✨ What can I help you with?<span class="blink">▊</span></span>
+    </div>
+  </div>
+  <p style="margin-top:20px; font-size:0.55em; color:var(--muted);">Inspired by Scott Hanselman · MCAPS Tech Connect 2026</p>
+</section>
+
+<!-- 3 LEVELS -->
+<section>
+  <h2>The Three Levels of AI</h2>
+  <h3>Understanding this changes how you talk about it.</h3>
+  <div class="cards">
+    <div class="card" style="border-color:var(--blue);"><div class="num" style="color:var(--blue);">01</div><h4>Chatbots</h4><p>"Complete this sentence…"<br>Predicts the next token. Statistically likely, not factual.</p></div>
+    <div class="card" style="border-color:var(--purple);"><div class="num" style="color:var(--purple);">02</div><h4>Tool-Calling</h4><p>"Read my email." "Check my calendar."<br>Can reach out and touch things.</p></div>
+    <div class="card" style="border-color:var(--green);"><div class="num" style="color:var(--green);">03</div><h4>Agentic Loops</h4><p>"Do stuff while I sleep."<br>Think → Act → Observe → Repeat. This is where it gets real.</p></div>
+  </div>
+  <div class="tip"><p>💡 Pro tip: say "agentic loop" in meetings as often as possible. It's like "but will it scale?" — instant credibility.</p></div>
+</section>
+
+<!-- CONTEXT QUOTE -->
+<section class="qs" data-background-color="#0d1117">
+  <blockquote>Context, context, context.<span class="sub">"I walked it down the primrose path, and the exact final word was always going to be <em style="color:var(--green);">zoo</em>."</span></blockquote>
+</section>
+
+<!-- CONTEXT -->
+<section>
+  <h2>Context Is Everything</h2>
+  <h3>It's a parrot — and parrots are amazing. 🦜</h3>
+  <div class="cmp">
+    <div class="cmp-col bad">
+      <h4>❌ No Context</h4>
+      <p style="font-size:0.6em;">"It's a beautiful day, let's go to the ___"</p>
+      <p style="font-size:0.9em; text-align:center; font-weight:900; color:var(--blue);">🏖️ Beach</p>
+      <p style="font-size:0.55em; color:var(--muted);">Statistically most likely. Not wrong. Not <em>yours</em>.</p>
+    </div>
+    <div class="cmp-col good">
+      <h4>✅ With Context</h4>
+      <p style="font-size:0.6em;">"My mum is a zookeeper. I live in Portland."</p>
+      <p style="font-size:0.9em; text-align:center; font-weight:900; color:var(--green);">🦁 Zoo</p>
+      <p style="font-size:0.55em; color:var(--muted);">95% probability. Context steers everything.</p>
+    </div>
+  </div>
+  <div class="tip"><p>💡 More context = better predictions. Feed it your codebase, specs, and data.</p></div>
+</section>
+
+<!-- SEMANTICS -->
+<section>
+  <h2>Semantics Do the Heavy Lifting</h2>
+  <h3>"Write me a clone of Minecraft." — Which word did the work?</h3>
+  <p style="font-size:1.1em; text-align:center; margin:20px 0; font-weight:300;">
+    Write me a clone of <span style="font-weight:900; color:var(--green); font-size:1.3em;">Minecraft</span>
+  </p>
+  <p style="text-align:center; color:var(--muted); max-width:650px; margin:0 auto;">
+    There's a 40-page specification hiding inside that one word.<br>
+    Want to be impressed? Try the same prompt <em>without saying Minecraft</em>.<br>
+    <span style="color:var(--orange);">People underestimate how much semantic weight their words carry.</span>
+  </p>
+</section>
+
+<!-- AGENTIC LOOP DIVIDER -->
+<section class="divider" data-background-color="#161b22">
+  <h2>🔄 The Agentic Loop</h2>
+  <p>Think it. Do it. Think it. Do it.</p>
+</section>
+
+<!-- THUMBNAIL DEMO -->
+<section>
+  <h2>Demo: YouTube Thumbnail</h2>
+  <h3>AI image → perfect thumbnail with one sentence.</h3>
+  <div class="term">
+    <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span style="color:var(--muted);font-size:0.85em;margin-left:6px;">~/thumbnails</span></div>
+    <div class="term-body">
+      <span class="p">❯ </span><span class="c">I have this AI image for my YouTube channel "Handy Ginger". Make it a YouTube thumbnail — 1280x720, under 2MB, JPG. Add bold white text "BRAKE FIX" bottom-right with black outline.</span><br>
+      <span class="o">🔍 Checking... <span class="h">hero.png (8.4 MB, 4000×4000)</span></span><br>
+      <span class="o">🔧 Found <span class="h">ImageMagick</span> — cropping, resizing, adding text...</span><br>
+      <span class="o">✅ <span class="h">thumbnail.jpg — 1280×720, 1.1 MB</span> <span class="w">(−87%)</span></span>
+    </div>
+  </div>
+  <ul class="el">
+    <li>🔐 Permission prompts at every step — you stay in control</li>
+    <li>🤠 Or go <code style="color:var(--orange);">/yolo</code> and auto-approve everything</li>
+    <li>🧠 It found ImageMagick, cropped 4K→16:9, added text overlay, compressed to spec</li>
+  </ul>
+</section>
+
+<!-- JUST DO STUFF -->
+<section class="qs" data-background-color="#0d1117">
+  <blockquote>You can just<br>do stuff.<span class="sub">The distance between intent and execution is basically zero.</span></blockquote>
+</section>
+
+<!-- FLYWHEEL -->
+<section>
+  <h2>The Automation Flywheel</h2>
+  <h3>One-off tasks become organizational superpowers.</h3>
+  <div class="fly">
+    <div class="fly-s" style="border-color:var(--blue);color:var(--blue);">🧠 Think</div><div class="fly-a">→</div>
+    <div class="fly-s" style="border-color:var(--purple);color:var(--purple);">⚡ Do</div><div class="fly-a">→</div>
+    <div class="fly-s" style="border-color:var(--orange);color:var(--orange);">📜 Automate</div><div class="fly-a">→</div>
+    <div class="fly-s" style="border-color:var(--green);color:var(--green);">🌍 Share</div>
+  </div>
+  <div class="term">
+    <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span></div>
+    <div class="term-body">
+      <span class="p">❯ </span><span class="c">Write me a script that does this for any image + any title text</span><br>
+      <span class="o">📝 Creating youtube-thumbnail.sh — crop, resize, overlay, compress</span><br>
+      <span class="p">❯ </span><span class="c">Make this a skill called youtube-thumbnail</span><br>
+      <span class="o">📦 Saved to <span class="h">~/.copilot/skills/youtube-thumbnail/</span></span><br>
+      <span class="p">❯ </span><span class="c">I have 6 images in this folder. Process all of them with these titles...</span><br>
+      <span class="o">🐝 Processing 6 images in parallel... ✅ All done.</span>
+    </div>
+  </div>
+  <p style="color:var(--muted);">One task → script → skill → batch the whole folder. That's the flywheel.</p>
+</section>
+
+<!-- MCP -->
+<section>
+  <h2>MCP = USB for AI</h2>
+  <h3>They made you feel bad for no reason. It's just tools with a standard interface.</h3>
+  <div class="cards">
+    <div class="card" style="border-color:var(--purple);"><div class="icon">📊</div><h4>Any Data Source</h4><p>REST APIs, databases, sensors, IoT — anything structured</p></div>
+    <div class="card" style="border-color:var(--blue);"><div class="icon">📅</div><h4>Microsoft Graph</h4><p>Calendar, email, Teams — Work IQ integration</p></div>
+    <div class="card" style="border-color:var(--green);"><div class="icon">✨</div><h4>Instant Mashup</h4><p>Combined insights, HTML reports, dashboards — just ask</p></div>
+  </div>
+  <div class="tip"><p>💡 Two totally unrelated data sources mashed up with plain English. "What do my commits look like overlaid with my meeting schedule?"</p></div>
+</section>
+
+<!-- COMMITS VS MEETINGS DEMO -->
+<section>
+  <h2>Demo: Commits vs Meetings</h2>
+  <h3>Do more meetings = fewer commits? Let's find out.</h3>
+  <div class="term">
+    <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span></div>
+    <div class="term-body">
+      <span class="p">❯ </span><span class="c">Show me my GitHub commits for the last 2 weeks, by day</span><br>
+      <span class="o">📊 Mon: <span class="h">12</span> │ Tue: <span class="h">8</span> │ Wed: <span class="w">2</span> │ Thu: <span class="h">15</span> │ Fri: <span class="w">3</span></span><br>
+      <span class="p">❯ </span><span class="c">Now show my meeting hours for the same period</span><br>
+      <span class="o">📅 Mon: <span class="w">2h</span> │ Tue: <span class="w">3h</span> │ Wed: <span class="w">6h</span> │ Thu: <span class="h">1h</span> │ Fri: <span class="w">5.5h</span></span><br>
+      <span class="p">❯ </span><span class="c">Combine into an HTML report with charts — correlation analysis</span><br>
+      <span class="o">📄 Created <span class="h">productivity-report.html</span> — charts + insights</span>
+    </div>
+  </div>
+  <p style="color:var(--muted);">GitHub MCP + Graph MCP — two data sources, plain English, instant correlation. "Your most productive days average 1.2h of meetings."</p>
+</section>
+
+<!-- ALL MODELS -->
+<section>
+  <h2>One Subscription. All the Models.</h2>
+  <div class="stats">
+    <div class="stat"><div class="big gt">Claude</div><div class="lbl">Sonnet · Opus · Haiku</div></div>
+    <div class="stat"><div class="big gt">Gemini</div><div class="lbl">Google's best</div></div>
+    <div class="stat"><div class="big gt">Codex</div><div class="lbl">Only on GitHub ✨</div></div>
+  </div>
+  <div class="term" style="margin-top:10px;">
+    <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span></div>
+    <div class="term-body">
+      <span class="p">❯ </span><span class="c">/model</span> <span class="o">— pick any model, switch anytime</span><br>
+      <span class="p">❯ </span><span class="c">/tasks</span> <span class="o">— swarm: same task, multiple models at once</span><br>
+      <span class="o">&nbsp; "Pick only the things they <span class="h">all agree on</span>"</span>
+    </div>
+  </div>
+  <p style="color:var(--muted);">No vendor lock-in. Consensus-based code review. Multi-perspective analysis.</p>
+</section>
+
+<!-- CLOUD DIVIDER -->
+<section class="divider" data-background-color="#161b22">
+  <h2>☁️ Scale to the Cloud</h2>
+  <p>Delegate. Fleet. Swarm.</p>
+</section>
+
+<!-- DELEGATE & FLEET -->
+<section>
+  <h2>From Terminal to Cloud</h2>
+  <h3>The boring stuff gets automated. Your expertise doesn't.</h3>
+  <div class="cmp">
+    <div class="cmp-col" style="border-color:var(--purple);">
+      <h4 style="color:var(--purple);">/delegate</h4>
+      <ul class="el"><li>🔼 Push a task to the cloud</li><li>🤖 Files issues via GitHub CLI</li><li>⚙️ Assigns to Copilot coding agent</li><li>📬 Creates PRs when done</li></ul>
+    </div>
+    <div class="cmp-col" style="border-color:var(--green);">
+      <h4 style="color:var(--green);">/fleet</h4>
+      <ul class="el"><li>🐝 Swarm across multiple issues</li><li>🔀 Each on its own branch</li><li>✅ Builds verified before push</li><li>⚡ Parallel everything</li></ul>
+    </div>
+  </div>
+  <div class="tip"><p>💡 Dependabot PRs, routine upgrades, repetitive fixes — dispatched in parallel while you grab coffee.</p></div>
+</section>
+
+<!-- AGENT HQ -->
+<section>
+  <h2>Agent HQ in VS Code</h2>
+  <h3>Your command center. Move between modes fluidly.</h3>
+  <div class="cards">
+    <div class="card" style="border-color:var(--blue);"><div class="icon">🖥️</div><h4>Local</h4><p>Actively steer in your terminal</p></div>
+    <div class="card" style="border-color:var(--purple);"><div class="icon">🔄</div><h4>Background</h4><p>Running locally while you do other things</p></div>
+    <div class="card" style="border-color:var(--green);"><div class="icon">☁️</div><h4>Cloud</h4><p>Delegated to GitHub's infrastructure</p></div>
+  </div>
+  <p>Run 6+ agents simultaneously. Split terminals, swarm, delegate. It's not about the terminal — the terminal could be in the background.</p>
+</section>
+
+<!-- INFINITE SESSIONS -->
+<section>
+  <h2>Infinite Sessions</h2>
+  <h3>It doesn't "get dumb" after 20 minutes. Unique to GitHub Copilot CLI.</h3>
+  <div class="stats">
+    <div class="stat"><div class="big gt">200K+</div><div class="lbl">Token context window</div></div>
+    <div class="stat"><div class="big gt">12h+</div><div class="lbl">Session duration tested</div></div>
+    <div class="stat"><div class="big gt">∞</div><div class="lbl">Effective memory</div></div>
+  </div>
+  <ul class="el" style="margin-top:10px;">
+    <li>📝 Auto-compresses context, takes notes, preserves state in markdown</li>
+    <li>🧠 The window of attention is managed for you — no manual session splitting</li>
+    <li>🔁 <code style="color:var(--green);">--resume</code> picks up exactly where you left off</li>
+  </ul>
+</section>
+
+<!-- MODES -->
+<section>
+  <h2>Three Modes</h2>
+  <h3>Shift+Tab to switch. Match the mode to the moment.</h3>
+  <div class="cards">
+    <div class="card" style="border-color:var(--blue);"><div class="icon">📋</div><h4>Plan Mode</h4><p>"Don't touch anything." Just vibing. Come up with a plan. Everything turns blue.</p></div>
+    <div class="card" style="border-color:var(--green);"><div class="icon">🤖</div><h4>Autopilot</h4><p>"Get it done. Whatever it takes." Give it tests or a spec. It won't stop until it passes.</p></div>
+    <div class="card" style="border-color:var(--orange);"><div class="icon">⌨️</div><h4>Shell</h4><p>Direct terminal mode. Commands with AI assist. Quick, tactical, precise.</p></div>
+  </div>
+  <p style="color:var(--muted);">The "Ralph Wiggum Loop" — give it clarity of task and it <em>will</em> succeed. Not because it's a genius, but because it really, really wants to.</p>
+</section>
+
+<!-- MID QUOTE -->
+<section class="qs" data-background-color="#0d1117">
+  <blockquote>It's not just mid.<br>It's the <span style="color:var(--orange);">statistical mean</span> of mid.<span class="sub">Without steering and expertise, you get park or beach. The obvious answer. Not creative. Not smarter than you.</span></blockquote>
+</section>
+
+<!-- EXPERTISE -->
+<section>
+  <h2>AI Handles Toil. Humans Steer.</h2>
+  <div class="cmp">
+    <div class="cmp-col bad">
+      <h4>🤖 Without Steering</h4>
+      <ul class="el"><li>Generic one-shot output</li><li>Looks like every other website</li><li>The normal curve of design</li><li>Fine for internal tools & CRUD</li></ul>
+    </div>
+    <div class="cmp-col good">
+      <h4>🧑‍💻 With Expertise</h4>
+      <ul class="el"><li>Multi-monitor, multi-DPI edge cases</li><li>Domain-specific solutions</li><li>Creative, opinionated design</li><li>Production-grade quality</li></ul>
+    </div>
+  </div>
+  <div class="tip"><p>💡 "You still need to know how to drive stick." Being mid isn't bad for the right use case — but don't confuse convenience with expertise.</p></div>
+</section>
+
+<!-- VIBE CODING -->
+<section>
+  <h2>Vibe Coding Is Real</h2>
+  <h3>And sometimes "mid" is exactly what you need.</h3>
+  <ul class="el">
+    <li>🔲 Need a ring light app? Vibe-coded a white square. Then added dimming, color temp, AI head tracking, mouse cutout.</li>
+    <li>🎙️ Podcast admin backend? 15 min/week editing JSON → full dashboard with auto-cropping headshots.</li>
+    <li>🌐 Need a website? Got one. Then added GeoCities mode — web rings, guest books, broken links.</li>
+    <li>📊 Status report aligned to your Connect? Feed it meetings + goals. It tells you what's on track and what you're ignoring.</li>
+  </ul>
+  <p style="color:var(--muted);"><strong style="color:var(--orange);">Meetings are not work. Meetings are toil.</strong> Shipping stuff. Solving problems. That's interesting.</p>
+</section>
+
+<!-- RESPONSIBLE AI -->
+<section>
+  <h2>Ground Everything 🛡️</h2>
+  <h3>If it doesn't know, it should say "I don't know."</h3>
+  <div class="cmp">
+    <div class="cmp-col good">
+      <h4>✅ Grounded</h4>
+      <p style="font-size:0.6em;">"How old is Brad Pitt?"</p>
+      <p style="font-size:0.85em; font-weight:700; color:var(--green); text-align:center;">Born Dec 18, 1963 ✓</p>
+      <p style="font-size:0.5em; color:var(--muted);">Enough data to be confident.</p>
+    </div>
+    <div class="cmp-col bad">
+      <h4>❌ Ungrounded</h4>
+      <p style="font-size:0.6em;">"When's Hanselman's birthday?"</p>
+      <p style="font-size:0.85em; font-weight:700; color:var(--red); text-align:center;">1979? 1969? 🤷 ✗</p>
+      <p style="font-size:0.5em; color:var(--muted);">Doesn't know. Guessed. Got it wrong.</p>
+    </div>
+  </div>
+  <div class="tip"><p>🛡️ Every solution you ship should have Responsible AI at its heart. Watch the log probs — when the model is uncertain, the tokens turn red.</p></div>
+</section>
+
+<!-- CHEAT SHEET -->
+<section>
+  <h2>Cheat Sheet</h2>
+  <h3>The commands that matter.</h3>
+  <table class="ct">
+    <tr><td>/yolo</td><td>Auto-approve all tool, path, and URL requests. Living dangerously.</td></tr>
+    <tr><td>/skills</td><td>List & manage reusable skills you've created</td></tr>
+    <tr><td>/model</td><td>Switch models — Claude, Gemini, Codex — anytime</td></tr>
+    <tr><td>/tasks</td><td>Swarm a task across multiple models for consensus</td></tr>
+    <tr><td>/delegate</td><td>Push work to GitHub cloud coding agents</td></tr>
+    <tr><td>/fleet</td><td>Parallel multi-issue/PR processing at scale</td></tr>
+    <tr><td>/context</td><td>Check token usage & context health</td></tr>
+    <tr><td>--resume</td><td>Resume any previous session exactly where you left off</td></tr>
+    <tr><td>Shift+Tab</td><td>Switch modes: Plan ↔ Autopilot ↔ Shell</td></tr>
+  </table>
+</section>
+
+<!-- TAKEAWAYS -->
+<section>
+  <h2>The Real Takeaways</h2>
+  <ul class="el">
+    <li>🦜 <strong>It's a parrot — and parrots are amazing.</strong> Set expectations, not fantasies.</li>
+    <li>🎯 <strong>Context is everything.</strong> More context = better output. Always.</li>
+    <li>🔄 <strong>Think → Do → Automate → Share.</strong> The flywheel compounds.</li>
+    <li>🔓 <strong>One subscription. All models.</strong> No lock-in.</li>
+    <li>⚡ <strong>Intent → Execution ≈ 0.</strong> English is the new scripting language.</li>
+    <li>🧑‍💻 <strong>Expertise still matters.</strong> AI handles toil, humans steer.</li>
+    <li>🔌 <strong>MCP = USB for AI.</strong> Stop overcomplicating it.</li>
+    <li>🛡️ <strong>Responsible AI is non-negotiable.</strong> Ground everything.</li>
+  </ul>
+</section>
+
+<!-- CLOSING -->
+<section class="qs" data-background-color="#0d1117">
+  <blockquote>
+    <span style="font-size:0.5em; color:var(--muted);">The official takeaway:</span><br>
+    The Copilot CLI<br>is not so bad.
+    <span class="sub">Now go convert your neighbors. 🚀</span>
+  </blockquote>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    width: 1280,
+    height: 720,
+    margin: 0.05,
+    transition: 'none',
+    center: false,
+    controls: true,
+    progress: true,
+    keyboard: true,
+    overview: true
+  });
+</script>
+</body>
+</html>
