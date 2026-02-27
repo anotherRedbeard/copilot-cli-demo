@@ -14,6 +14,8 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto;
   }
 
   header {
@@ -83,7 +85,6 @@
   .tooltip {
     display: none;
     position: absolute;
-    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     background: #1c2128;
@@ -97,6 +98,8 @@
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     line-height: 1.6;
   }
+  .tooltip.above { bottom: calc(100% + 8px); top: auto; }
+  .tooltip.below { top: calc(100% + 8px); bottom: auto; }
   .token:hover .tooltip { display: block; }
   .tooltip .alt { color: #8b949e; }
   .tooltip .alt-token { color: #e6edf3; }
@@ -120,6 +123,8 @@
     resize: none;
     outline: none;
     height: 48px;
+    max-height: 150px;
+    overflow-y: hidden;
   }
   .input-area textarea:focus { border-color: #58a6ff; }
   .input-area textarea::placeholder { color: #484f58; }
@@ -239,6 +244,8 @@ async function send() {
   if (!text) return;
 
   input.value = '';
+  input.style.height = '48px';
+  input.style.overflowY = 'hidden';
   sendBtn.disabled = true;
 
   addMessage('user', escapeHtml(text));
@@ -289,8 +296,39 @@ async function send() {
 function clearChat() {
   conversationHistory = [];
   chat.innerHTML = '';
+  input.style.height = '48px';
+  input.style.overflowY = 'hidden';
   input.focus();
 }
+
+// Auto-expand textarea as user types
+input.addEventListener('input', function() {
+  this.style.height = '48px';
+  if (this.scrollHeight > 48) {
+    const h = Math.min(this.scrollHeight, 150);
+    this.style.height = h + 'px';
+    this.style.overflowY = h >= 150 ? 'auto' : 'hidden';
+  }
+});
+
+// Position tooltip above or below based on available space
+document.addEventListener('mouseenter', function(e) {
+  const token = e.target.closest('.token');
+  if (!token) return;
+  const tooltip = token.querySelector('.tooltip');
+  if (!tooltip) return;
+
+  // Briefly show to measure
+  tooltip.classList.remove('above', 'below');
+  tooltip.classList.add('above');
+
+  const tokenRect = token.getBoundingClientRect();
+  // If token is in the top 120px of viewport, show tooltip below
+  if (tokenRect.top < 200) {
+    tooltip.classList.remove('above');
+    tooltip.classList.add('below');
+  }
+}, true);
 
 input.focus();
 </script>
